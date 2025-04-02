@@ -231,9 +231,9 @@ class Connection(object):
                 fragment = f.read(size)  # Leer SIZE bytes desde OFFSET.
                 encoded = base64.b64encode(fragment).decode("ascii")  # Codificar en base64.
             
-            # Enviar la respuesta al cliente con el fragmento codificado.
-            self.send_response(CODE_OK, "OK")
-            self.socket.send(f"{encoded}{EOL}".encode("ascii"))
+                # Enviar la respuesta al cliente con el fragmento codificado.
+                self.send_response(CODE_OK, "OK")
+                self.socket.send(f"{encoded}{EOL}".encode("ascii"))
         except Exception as e:
             # Manejar errores inesperados y enviar un mensaje de error.
             self.send_error(INTERNAL_ERROR, str(e))
@@ -266,7 +266,7 @@ class Connection(object):
         Comportamiento:
             - Si el código de error es fatal, la conexión se marca como no activa para terminarla.
         """
-
+    
         # Construir un mensaje de error con el código de estado y su descripción.
         response = f"{code} {error_messages[code]}: {message}{EOL}"
         

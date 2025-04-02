@@ -237,7 +237,45 @@ class Connection(object):
         except Exception as e:
             # Manejar errores inesperados y enviar un mensaje de error.
             self.send_error(INTERNAL_ERROR, str(e))
-            
     
+    # --- Helpers ---
+    def send_response(self, code, message):
+        """
+        Envía una respuesta al cliente con un código de estado y un mensaje.
+
+        Parámetros:
+            code (int): Código de estado que representa el resultado de la operación 
+            (ejemplo: 200 para éxito).
+            message (str): Mensaje asociado al código de estado.
+        """
+        
+        # Construir la respuesta con el código de estado y el mensaje proporcionado.
+        response = f"{code} {message}{EOL}"
+        
+        # Enviar la respuesta al cliente a través del socket.
+        self.socket.send(response.encode("ascii"))
+
+    def send_error(self, code, message):
+        """
+        Envía un mensaje de error al cliente con un código de estado y una descripción del problema.
+
+        Parámetros:
+            code (int): Código de error que representa el tipo de problema ocurrido.
+            message (str): Descripción adicional del error que ocurrió.
+
+        Comportamiento:
+            - Si el código de error es fatal, la conexión se marca como no activa para terminarla.
+        """
+
+        # Construir un mensaje de error con el código de estado y su descripción.
+        response = f"{code} {error_messages[code]}: {message}{EOL}"
+        
+        # Enviar el mensaje de error al cliente a través del socket.
+        self.socket.send(response.encode("ascii"))
+
+        # Si el código de error es fatal, finalizar la conexión.
+        if fatal_status(code):
+            self.connected = False
+
 
 

@@ -26,8 +26,8 @@ class Server(object):
         self.sock.bind((addr, port)) #address and puertos
         self.sock.listen(5) #queue fifo
         print("Serving %s on %s:%s." % (directory, addr, port))
-        # FALTA: Crear socket del servidor, configurarlo, asignarlo
-        # a una dirección y puerto, etc.
+
+
 
     def serve(self):
         """

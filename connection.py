@@ -133,3 +133,46 @@ class Connection(object):
             # Manejar errores inesperados y enviar un mensaje al cliente.
             self.send_error(INTERNAL_ERROR, str(e))
 
+    def handle_get_metadata(self, args):
+        """
+        Obtiene y envía el tamaño de un archivo en el directorio del servidor.
+
+        Parámetros:
+            args (list): Lista de argumentos recibidos del cliente. Debe contener 
+                         exactamente 1 argumento: el nombre del archivo.
+
+        Comportamiento:
+            - Valida que se proporcione un único argumento, que debe ser el nombre del archivo.
+            - Verifica que el archivo existe en el directorio del servidor.
+            - Si el archivo es válido, se calcula su tamaño y se envía al cliente.
+            - En caso de errores (archivo no encontrado, argumentos inválidos, etc.), 
+            se envía un mensaje de error al cliente.
+        """
+
+        # Verificar que se proporcione exactamente un argumento: el nombre del archivo.
+        if len(args) != 1:
+            self.send_error(INVALID_ARGUMENTS, "Expected 1 argument: FILENAME")
+            return
+
+        # Obtener el nombre del archivo y construir la ruta completa.
+        filename = args[0]
+        filepath = os.path.join(self.directory, filename)
+
+        # Verificar si el archivo existe en el directorio del servidor.
+        if not os.path.isfile(filepath):
+            self.send_error(FILE_NOT_FOUND, f"File '{filename}' not found")
+            return
+
+        try:
+            # Obtener el tamaño del archivo en bytes.
+            size = os.path.getsize(filepath)
+
+            # Enviar respuesta exitosa al cliente con el tamaño del archivo.
+            self.send_response(CODE_OK, "OK")
+            self.socket.send(f"{size}{EOL}".encode("ascii"))
+        except Exception as e:
+            # Manejar cualquier error inesperado y enviar un mensaje de error.
+            self.send_error(INTERNAL_ERROR, str(e))
+            
+    
+

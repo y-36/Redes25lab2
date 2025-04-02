@@ -20,6 +20,11 @@ class Server(object):
 
     def __init__(self, addr=DEFAULT_ADDR, port=DEFAULT_PORT,
                  directory=DEFAULT_DIR):
+        self.directory = directory
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   #IPv4 AND TCP 
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # Consistencia a resets server
+        self.sock.bind((addr, port)) #address and puertos
+        self.sock.listen(5) #queue fifo
         print("Serving %s on %s:%s." % (directory, addr, port))
         # FALTA: Crear socket del servidor, configurarlo, asignarlo
         # a una dirección y puerto, etc.

@@ -174,5 +174,68 @@ class Connection(object):
             # Manejar cualquier error inesperado y enviar un mensaje de error.
             self.send_error(INTERNAL_ERROR, str(e))
             
-    
+    def handle_get_slice(self, args):
+        """
+        Obtiene una porción de un archivo y la envía al cliente como una cadena codificada en base64.
+
+        Parámetros:
+            args (list): Lista de argumentos proporcionados por el cliente. Deben incluir:
+                         - FILENAME (str): Nombre del archivo a leer.
+                         - OFFSET (int): Posición inicial en bytes dentro del archivo.
+                         - SIZE (int): Cantidad de bytes a leer desde el archivo.
+
+        Comportamiento:
+            - Valida que se reciban tres argumentos: FILENAME, OFFSET y SIZE.
+            - Verifica que el archivo exista en el directorio del servidor.
+            - Valida que OFFSET y SIZE sean números enteros positivos y estén dentro de los 
+            límites del archivo.
+            - Lee la porción del archivo especificada, la codifica en base64 y la envía al cliente.
+            - En caso de errores (argumentos inválidos, archivo no encontrado, etc.), 
+            se envía un mensaje de error al cliente.
+        """
+
+        # Verificar que se proporcionen exactamente tres argumentos: FILENAME, OFFSET y SIZE.
+        if len(args) != 3:
+            self.send_error(INVALID_ARGUMENTS, "Expected 3 arguments: FILENAME OFFSET SIZE")
+            return
+
+        # Extraer argumentos y construir la ruta del archivo.
+        filename, offset_str, size_str = args
+        filepath = os.path.join(self.directory, filename)
+
+        # Validar que el archivo exista en el directorio.
+        if not os.path.isfile(filepath):
+            self.send_error(FILE_NOT_FOUND, f"File '{filename}' not found")
+            return
+
+        # Validar que OFFSET y SIZE sean enteros positivos.
+        try:
+            offset = int(offset_str)
+            size = int(size_str)
+            if offset < 0 or size < 0:
+                raise ValueError
+        except ValueError:
+            self.send_error(INVALID_ARGUMENTS, "Invalid OFFSET or SIZE (must be integers >= 0)")
+            return
+
+        # Validar que OFFSET + SIZE no excedan el tamaño del archivo.
+        filesize = os.path.getsize(filepath)
+        if offset + size > filesize:
+            self.send_error(BAD_OFFSET, "OFFSET + SIZE exceeds file size")
+            return
+
+        try:
+            # Leer el fragmento especificado del archivo y codificarlo en base64.
+            with open(filepath, "rb") as f:
+                f.seek(offset)  # Moverse al OFFSET dentro del archivo.
+                fragment = f.read(size)  # Leer SIZE bytes desde OFFSET.
+                encoded = base64.b64encode(fragment).decode("ascii")  # Codificar en base64.
+            
+            # Enviar la respuesta al cliente con el fragmento codificado.
+            self.send_response(CODE_OK, "OK")
+            self.socket.send(f"{encoded}{EOL}".encode("ascii"))
+        except Exception as e:
+            # Manejar errores inesperados y enviar un mensaje de error.
+            self.send_error(INTERNAL_ERROR, str(e))
+
 

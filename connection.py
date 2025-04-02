@@ -15,8 +15,10 @@ class Connection(object):
     """
 
     def __init__(self, socket, directory):
-        # FALTA: Inicializar atributos de Connection
-        pass
+        self.socket = socket
+        self.directory = directory
+        self.connected = True
+
 
     def handle(self):
         """

@@ -2,7 +2,7 @@
 # Revisión 2019 (a Python 3 y base64): Pablo Ventura
 # Copyright 2014 Carlos Bederián
 # $Id: connection.py 455 2011-05-01 00:32:09Z carlos $
-
+import os
 import socket
 from constants import *
 from base64 import b64encode
@@ -237,5 +237,7 @@ class Connection(object):
         except Exception as e:
             # Manejar errores inesperados y enviar un mensaje de error.
             self.send_error(INTERNAL_ERROR, str(e))
+            
+    
 
 

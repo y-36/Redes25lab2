@@ -62,6 +62,7 @@ class Connection(object):
         Parámetros:
             command_line (str): Línea de comando enviada por el cliente.
         """
+        
         # Dividir la línea de comando en partes: comando y argumentos.
         parts = command_line.split()
         if not parts:
@@ -94,4 +95,41 @@ class Connection(object):
             # Enviar un error si el comando es desconocido.
             self.send_error(INVALID_COMMAND, f"Unknown command: {cmd}")
     
-    
+    def handle_get_file_listing(self, args):
+        """
+        Genera y envía una lista de archivos en el directorio del servidor al cliente.
+
+        Parámetros:
+            args (list): Lista de argumentos recibidos del cliente. Este comando 
+                         no espera argumentos adicionales, y se envía un error 
+                         si se proporcionan.
+
+        Comportamiento:
+            - Si no hay argumentos, obtiene la lista de archivos en el directorio 
+              configurado para el servidor.
+            - La lista de archivos se envía al cliente línea por línea, terminando con '\r\n'.
+            - Si ocurre un error durante la operación, se envía un mensaje de error.
+        """
+
+        # Verificar que no se reciban argumentos con este comando.
+        if len(args) != 0:
+            self.send_error(INVALID_ARGUMENTS, "No arguments expected")
+            return
+
+        try:
+            # Obtener la lista de archivos en el directorio del servidor.
+            files = os.listdir(self.directory)
+            
+            # Construir la respuesta con el código de éxito.
+            response = f"{CODE_OK} OK{EOL}"
+            for f in files:
+                # Agregar cada archivo a la respuesta.
+                response += f"{f}{EOL}"
+            response += EOL  # Indicador de fin de lista.
+
+            # Enviar la respuesta completa al cliente.
+            self.socket.send(response.encode("ascii"))
+        except Exception as e:
+            # Manejar errores inesperados y enviar un mensaje al cliente.
+            self.send_error(INTERNAL_ERROR, str(e))
+

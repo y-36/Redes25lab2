@@ -9,6 +9,7 @@
 import optparse
 import socket
 import threading
+import sys
 from connection import Connection
 from constants import *
 
@@ -42,6 +43,15 @@ class Server(object):
                 args=(conn,)
             )
             client_thread.start()
+    
+    def handle_client(self, conn):
+        try:
+            connection = Connection(conn, self.directory)
+            connection.handle()
+        except Exception as e:
+            print(f"Error handling client: {e}")
+        finally:
+            conn.close()
 
 
 def main():

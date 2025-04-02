@@ -229,7 +229,7 @@ class Connection(object):
             with open(filepath, "rb") as f:
                 f.seek(offset)  # Moverse al OFFSET dentro del archivo.
                 fragment = f.read(size)  # Leer SIZE bytes desde OFFSET.
-                encoded = base64.b64encode(fragment).decode("ascii")  # Codificar en base64.
+                encoded = b64encode(fragment).decode("ascii")  # Codificar en base64.
             
                 # Enviar la respuesta al cliente con el fragmento codificado.
                 self.send_response(CODE_OK, "OK")

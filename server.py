@@ -8,7 +8,8 @@
 
 import optparse
 import socket
-import connection
+import threading
+from connection import Connection
 from constants import *
 
 
@@ -27,17 +28,20 @@ class Server(object):
         self.sock.listen(5) #queue fifo
         print("Serving %s on %s:%s." % (directory, addr, port))
 
-
-
     def serve(self):
         """
         Loop principal del servidor. Se acepta una conexión a la vez
         y se espera a que concluya antes de seguir.
         """
         while True:
-            pass
-            # FALTA: Aceptar una conexión al server, crear una
-            # Connection para la conexión y atenderla hasta que termine.
+            conn, addr = self.sock.accept()  # Espera a que un cliente se conecte.
+            print(f"Connected by: {addr}")
+            # Se crea un hilo para manejar la conexión del cliente.
+            client_thread = threading.Thread(
+                target=self.handle_client,
+                args=(conn,)
+            )
+            client_thread.start()
 
 
 def main():

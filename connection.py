@@ -46,3 +46,7 @@ class Connection(object):
                 command_line = data.split(EOL)[0].strip()
                 # Procesar el comando recibido.
                 self.process_command(command_line)
+                
+            except Exception as e:
+                self.send_error(INTERNAL_ERROR, str(e))
+                self.connected = False

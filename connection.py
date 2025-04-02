@@ -50,3 +50,48 @@ class Connection(object):
             except Exception as e:
                 self.send_error(INTERNAL_ERROR, str(e))
                 self.connected = False
+                
+    def process_command(self, command_line):
+        """
+        Procesa un comando recibido desde el cliente.
+
+        Este método analiza la línea de comandos enviada por el cliente, valida 
+        su estructura y ejecuta la acción correspondiente. Si el comando no es válido, 
+        se envía un mensaje de error al cliente.
+
+        Parámetros:
+            command_line (str): Línea de comando enviada por el cliente.
+        """
+        # Dividir la línea de comando en partes: comando y argumentos.
+        parts = command_line.split()
+        if not parts:
+            # Enviar un error si el comando está vacío.
+            self.send_error(INVALID_COMMAND, "Empty command")
+            return
+
+        # Extraer el comando principal y sus argumentos.
+        cmd = parts[0]
+        args = parts[1:]
+
+        if cmd == "quit":
+            # Comando para finalizar la conexión.
+            self.send_response(CODE_OK, "OK")
+            self.connected = False
+
+        elif cmd == "get_file_listing":
+            # Comando para obtener la lista de archivos del directorio.
+            self.handle_get_file_listing(args)
+
+        elif cmd == "get_metadata":
+            # Comando para obtener metadatos de un archivo.
+            self.handle_get_metadata(args)
+
+        elif cmd == "get_slice":
+            # Comando para obtener una porción de un archivo codificada en base64.
+            self.handle_get_slice(args)
+
+        else:
+            # Enviar un error si el comando es desconocido.
+            self.send_error(INVALID_COMMAND, f"Unknown command: {cmd}")
+    
+    
